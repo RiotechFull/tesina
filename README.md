@@ -1,2 +1,6 @@
-# tesina
+# tesina Titulo
 modelo de gestion de proyecto tesina
+## Fundamentacion
+Este proyecto esta destinado a ......
+## Objetivo
+Nuestro proposito es ....
