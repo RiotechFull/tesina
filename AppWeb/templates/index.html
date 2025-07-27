@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión de Asistencia Técnica</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">
+                <i class="fas fa-tools"></i>
+                <h1>TechSupport Pro</h1>
+            </div>
+            <nav class="nav">
+                <ul class="nav-list">
+                    <li><a href="#dashboard" class="nav-link active">Dashboard</a></li>
+                    <li><a href="#tickets" class="nav-link">Tickets</a></li>
+                    <li><a href="#clients" class="nav-link">Clientes</a></li>
+                    <li><a href="#inventory" class="nav-link">Inventario</a></li>
+                    <li><a href="#reports" class="nav-link">Reportes</a></li>
+                </ul>
+            </nav>
+            <div class="user-menu">
+                <div class="user-info">
+                    <img src="https://via.placeholder.com/40" alt="Usuario" class="user-avatar">
+                    <span class="user-name">{{ current_user.name if current_user else 'Usuario' }}</span>
+                </div>
+                <div class="dropdown">
+                    <button class="dropdown-btn">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="dropdown-content">
+                        <a href="#profile"><i class="fas fa-user"></i> Perfil</a>
+                        <a href="#settings"><i class="fas fa-cog"></i> Configuración</a>
+                        <a href="/logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section active">
+            <div class="section-header">
+                <h2>Dashboard</h2>
+                <p>Resumen general del sistema de asistencia técnica</p>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-ticket-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ stats.total_tickets if stats else 0 }}</h3>
+                        <p>Total de Tickets</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ stats.pending_tickets if stats else 0 }}</h3>
+                        <p>Pendientes</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ stats.completed_tickets if stats else 0 }}</h3>
+                        <p>Completados</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ stats.total_clients if stats else 0 }}</h3>
+                        <p>Clientes Activos</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Tickets -->
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Tickets Recientes</h3>
+                        <a href="#tickets" class="btn btn-primary">Ver Todos</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="ticket-list">
+                            {% if recent_tickets %}
+                                {% for ticket in recent_tickets %}
+                                <div class="ticket-item">
+                                    <div class="ticket-status status-{{ ticket.status }}">
+                                        <i class="fas fa-circle"></i>
+                                    </div>
+                                    <div class="ticket-info">
+                                        <h4>#{{ ticket.id }} - {{ ticket.title }}</h4>
+                                        <p>{{ ticket.client_name }} • {{ ticket.created_at }}</p>
+                                    </div>
+                                    <div class="ticket-priority priority-{{ ticket.priority }}">
+                                        {{ ticket.priority }}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="no-data">No hay tickets recientes</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Actividad Reciente</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="activity-list">
+                            {% if recent_activity %}
+                                {% for activity in recent_activity %}
+                                <div class="activity-item">
+                                    <div class="activity-icon">
+                                        <i class="fas fa-{{ activity.icon }}"></i>
+                                    </div>
+                                    <div class="activity-content">
+                                        <p>{{ activity.description }}</p>
+                                        <span class="activity-time">{{ activity.timestamp }}</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="no-data">No hay actividad reciente</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tickets Section -->
+        <section id="tickets" class="section">
+            <div class="section-header">
+                <h2>Gestión de Tickets</h2>
+                <button class="btn btn-primary" onclick="openModal('newTicketModal')">
+                    <i class="fas fa-plus"></i> Nuevo Ticket
+                </button>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="status-filter">Estado:</label>
+                    <select id="status-filter" class="filter-select">
+                        <option value="">Todos</option>
+                        <option value="abierto">Abierto</option>
+                        <option value="en_proceso">En Proceso</option>
+                        <option value="esperando_cliente">Esperando Cliente</option>
+                        <option value="cerrado">Cerrado</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="priority-filter">Prioridad:</label>
+                    <select id="priority-filter" class="filter-select">
+                        <option value="">Todas</option>
+                        <option value="baja">Baja</option>
+                        <option value="media">Media</option>
+                        <option value="alta">Alta</option>
+                        <option value="urgente">Urgente</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="technician-filter">Técnico:</label>
+                    <select id="technician-filter" class="filter-select">
+                        <option value="">Todos</option>
+                        {% if technicians %}
+                            {% for tech in technicians %}
+                            <option value="{{ tech.id }}">{{ tech.name }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <input type="text" id="search-tickets" class="search-input" placeholder="Buscar tickets...">
+                </div>
+            </div>
+
+            <!-- Tickets Table -->
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Título</th>
+                            <th>Cliente</th>
+                            <th>Estado</th>
+                            <th>Prioridad</th>
+                            <th>Técnico</th>
+                            <th>Fecha Creación</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tickets-table-body">
+                        {% if tickets %}
+                            {% for ticket in tickets %}
+                            <tr data-ticket-id="{{ ticket.id }}">
+                                <td>#{{ ticket.id }}</td>
+                                <td>{{ ticket.title }}</td>
+                                <td>{{ ticket.client_name }}</td>
+                                <td>
+                                    <span class="status-badge status-{{ ticket.status }}">
+                                        {{ ticket.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="priority-badge priority-{{ ticket.priority }}">
+                                        {{ ticket.priority }}
+                                    </span>
+                                </td>
+                                <td>{{ ticket.technician_name or 'Sin asignar' }}</td>
+                                <td>{{ ticket.created_at }}</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-sm btn-info" onclick="viewTicket({{ ticket.id }})">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-warning" onclick="editTicket({{ ticket.id }})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteTicket({{ ticket.id }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="no-data">No hay tickets disponibles</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Clients Section -->
+        <section id="clients" class="section">
+            <div class="section-header">
+                <h2>Gestión de Clientes</h2>
+                <button class="btn btn-primary" onclick="openModal('newClientModal')">
+                    <i class="fas fa-plus"></i> Nuevo Cliente
+                </button>
+            </div>
+
+            <div class="clients-grid">
+                {% if clients %}
+                    {% for client in clients %}
+                    <div class="client-card">
+                        <div class="client-header">
+                            <div class="client-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="client-info">
+                                <h3>{{ client.name }}</h3>
+                                <p>{{ client.email }}</p>
+                            </div>
+                        </div>
+                        <div class="client-details">
+                            <p><i class="fas fa-phone"></i> {{ client.phone }}</p>
+                            <p><i class="fas fa-map-marker-alt"></i> {{ client.address }}</p>
+                            <p><i class="fas fa-building"></i> {{ client.company }}</p>
+                        </div>
+                        <div class="client-stats">
+                            <div class="stat">
+                                <span class="stat-number">{{ client.total_tickets }}</span>
+                                <span class="stat-label">Tickets</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number">{{ client.active_tickets }}</span>
+                                <span class="stat-label">Activos</span>
+                            </div>
+                        </div>
+                        <div class="client-actions">
+                            <button class="btn btn-sm btn-info" onclick="viewClient({{ client.id }})">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                            <button class="btn btn-sm btn-warning" onclick="editClient({{ client.id }})">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-data">
+                        <i class="fas fa-users"></i>
+                        <p>No hay clientes registrados</p>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Inventory Section -->
+        <section id="inventory" class="section">
+            <div class="section-header">
+                <h2>Inventario de Hardware</h2>
+                <button class="btn btn-primary" onclick="openModal('newItemModal')">
+                    <i class="fas fa-plus"></i> Nuevo Item
+                </button>
+            </div>
+
+            <div class="inventory-grid">
+                {% if inventory %}
+                    {% for item in inventory %}
+                    <div class="inventory-card">
+                        <div class="item-image">
+                            <i class="fas fa-{{ item.icon }}"></i>
+                        </div>
+                        <div class="item-info">
+                            <h3>{{ item.name }}</h3>
+                            <p class="item-category">{{ item.category }}</p>
+                            <p class="item-serial">S/N: {{ item.serial_number }}</p>
+                        </div>
+                        <div class="item-status">
+                            <span class="status-badge status-{{ item.status }}">
+                                {{ item.status }}
+                            </span>
+                        </div>
+                        <div class="item-actions">
+                            <button class="btn btn-sm btn-info" onclick="viewItem({{ item.id }})">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-warning" onclick="editItem({{ item.id }})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-data">
+                        <i class="fas fa-boxes"></i>
+                        <p>No hay items en el inventario</p>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Reports Section -->
+        <section id="reports" class="section">
+            <div class="section-header">
+                <h2>Reportes y Estadísticas</h2>
+            </div>
+
+            <div class="reports-grid">
+                <div class="report-card">
+                    <h3>Tickets por Estado</h3>
+                    <div class="chart-container">
+                        <canvas id="ticketsByStatusChart"></canvas>
+                    </div>
+                </div>
+                <div class="report-card">
+                    <h3>Tickets por Mes</h3>
+                    <div class="chart-container">
+                        <canvas id="ticketsByMonthChart"></canvas>
+                    </div>
+                </div>
+                <div class="report-card">
+                    <h3>Rendimiento de Técnicos</h3>
+                    <div class="chart-container">
+                        <canvas id="technicianPerformanceChart"></canvas>
+                    </div>
+                </div>
+                <div class="report-card">
+                    <h3>Tipos de Hardware</h3>
+                    <div class="chart-container">
+                        <canvas id="hardwareTypesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modals -->
+    <!-- New Ticket Modal -->
+    <div id="newTicketModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nuevo Ticket de Soporte</h3>
+                <button class="close-btn" onclick="closeModal('newTicketModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="newTicketForm" class="modal-form">
+                <div class="form-group">
+                    <label for="ticket-title">Título del Problema</label>
+                    <input type="text" id="ticket-title" name="title" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="ticket-client">Cliente</label>
+                        <select id="ticket-client" name="client_id" required>
+                            <option value="">Seleccionar cliente</option>
+                            {% if clients %}
+                                {% for client in clients %}
+                                <option value="{{ client.id }}">{{ client.name }}</option>
+                                {% endfor %}
+                            {% endif %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="ticket-priority">Prioridad</label>
+                        <select id="ticket-priority" name="priority" required>
+                            <option value="baja">Baja</option>
+                            <option value="media">Media</option>
+                            <option value="alta">Alta</option>
+                            <option value="urgente">Urgente</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="ticket-description">Descripción del Problema</label>
+                    <textarea id="ticket-description" name="description" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="ticket-hardware">Hardware Afectado</label>
+                    <select id="ticket-hardware" name="hardware_id">
+                        <option value="">Seleccionar hardware</option>
+                        {% if inventory %}
+                            {% for item in inventory %}
+                            <option value="{{ item.id }}">{{ item.name }} ({{ item.serial_number }})</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('newTicketModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Crear Ticket</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- New Client Modal -->
+    <div id="newClientModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nuevo Cliente</h3>
+                <button class="close-btn" onclick="closeModal('newClientModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="newClientForm" class="modal-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="client-name">Nombre</label>
+                        <input type="text" id="client-name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="client-email">Email</label>
+                        <input type="email" id="client-email" name="email" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="client-phone">Teléfono</label>
+                        <input type="tel" id="client-phone" name="phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="client-company">Empresa</label>
+                        <input type="text" id="client-company" name="company">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="client-address">Dirección</label>
+                    <textarea id="client-address" name="address" rows="3"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('newClientModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Crear Cliente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- New Item Modal -->
+    <div id="newItemModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nuevo Item de Hardware</h3>
+                <button class="close-btn" onclick="closeModal('newItemModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="newItemForm" class="modal-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="item-name">Nombre del Item</label>
+                        <input type="text" id="item-name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="item-category">Categoría</label>
+                        <select id="item-category" name="category" required>
+                            <option value="">Seleccionar categoría</option>
+                            <option value="computadora">Computadora</option>
+                            <option value="impresora">Impresora</option>
+                            <option value="red">Equipo de Red</option>
+                            <option value="periferico">Periférico</option>
+                            <option value="servidor">Servidor</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="item-serial">Número de Serie</label>
+                        <input type="text" id="item-serial" name="serial_number" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="item-status">Estado</label>
+                        <select id="item-status" name="status" required>
+                            <option value="funcionando">Funcionando</option>
+                            <option value="mantenimiento">En Mantenimiento</option>
+                            <option value="reparacion">En Reparación</option>
+                            <option value="retirado">Retirado</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="item-description">Descripción</label>
+                    <textarea id="item-description" name="description" rows="3"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('newItemModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Crear Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Cargando...</p>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>
