@@ -176,11 +176,19 @@ def index():
     stats = get_stats()
     recent_tickets = get_recent_tickets()
     recent_activity = get_recent_activity()
+    tickets = get_all_tickets()
+    clients = get_all_clients()
+    inventory = get_all_inventory()
+    technicians = get_technicians()
     
     return render_template('index.html', 
                          stats=stats, 
                          recent_tickets=recent_tickets,
-                         recent_activity=recent_activity)
+                         recent_activity=recent_activity,
+                         tickets=tickets,
+                         clients=clients,
+                         inventory=inventory,
+                         technicians=technicians)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

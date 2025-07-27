@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Navigation</title>
+    <style>
+        .section { display: none; }
+        .section.active { display: block; }
+        .nav-link.active { background-color: #667eea; color: white; }
+        .nav-link { padding: 10px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="#dashboard" class="nav-link active">Dashboard</a>
+        <a href="#tickets" class="nav-link">Tickets</a>
+        <a href="#clients" class="nav-link">Clientes</a>
+        <a href="#inventory" class="nav-link">Inventario</a>
+        <a href="#reports" class="nav-link">Reportes</a>
+    </nav>
+
+    <section id="dashboard" class="section active">
+        <h2>Dashboard</h2>
+        <p>Esta es la sección del dashboard</p>
+    </section>
+
+    <section id="tickets" class="section">
+        <h2>Tickets</h2>
+        <p>Esta es la sección de tickets</p>
+    </section>
+
+    <section id="clients" class="section">
+        <h2>Clientes</h2>
+        <p>Esta es la sección de clientes</p>
+    </section>
+
+    <section id="inventory" class="section">
+        <h2>Inventario</h2>
+        <p>Esta es la sección de inventario</p>
+    </section>
+
+    <section id="reports" class="section">
+        <h2>Reportes</h2>
+        <p>Esta es la sección de reportes</p>
+    </section>
+
+    <script>
+        // Navigation Setup
+        function setupNavigation() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetSection = this.getAttribute('href').substring(1);
+                    showSection(targetSection);
+                });
+            });
+        }
+
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active class from all nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Show target section
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+            
+            // Add active class to corresponding nav link
+            const activeLink = document.querySelector(`[href="#${sectionId}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+        }
+
+        // Initialize navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            setupNavigation();
+            console.log('Navigation initialized');
+        });
+    </script>
+</body>
+</html> 

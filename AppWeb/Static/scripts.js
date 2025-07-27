@@ -20,24 +20,32 @@ function initializeApp() {
 // Navigation Setup
 function setupNavigation() {
     const navLinks = document.querySelectorAll('.nav-link');
+    console.log('Setting up navigation with', navLinks.length, 'links');
     
     navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             const targetSection = this.getAttribute('href').substring(1);
+            console.log('Nav link clicked:', targetSection);
             showSection(targetSection);
         });
     });
 }
 
 function showSection(sectionId) {
+    console.log('Showing section:', sectionId);
+    
     // Hide all sections
-    document.querySelectorAll('.section').forEach(section => {
+    const sections = document.querySelectorAll('.section');
+    console.log('Found sections:', sections.length);
+    sections.forEach(section => {
         section.classList.remove('active');
     });
     
     // Remove active class from all nav links
-    document.querySelectorAll('.nav-link').forEach(link => {
+    const navLinks = document.querySelectorAll('.nav-link');
+    console.log('Found nav links:', navLinks.length);
+    navLinks.forEach(link => {
         link.classList.remove('active');
     });
     
@@ -46,12 +54,18 @@ function showSection(sectionId) {
     if (targetSection) {
         targetSection.classList.add('active');
         currentSection = sectionId;
+        console.log('Section activated:', sectionId);
+    } else {
+        console.error('Target section not found:', sectionId);
     }
     
     // Add active class to corresponding nav link
     const activeLink = document.querySelector(`[href="#${sectionId}"]`);
     if (activeLink) {
         activeLink.classList.add('active');
+        console.log('Nav link activated:', sectionId);
+    } else {
+        console.error('Active nav link not found:', sectionId);
     }
     
     // Update charts if reports section
@@ -96,12 +110,30 @@ function closeModal(modalId) {
         if (form) {
             form.reset();
         }
+        
+        // Remove dynamic modals from DOM after animation
+        if (modalId.includes('DetailModal')) {
+            setTimeout(() => {
+                if (modal && modal.parentNode) {
+                    modal.parentNode.removeChild(modal);
+                }
+            }, 300); // Wait for CSS transition
+        }
     }
 }
 
 function closeAllModals() {
     document.querySelectorAll('.modal').forEach(modal => {
         modal.classList.remove('active');
+        
+        // Remove dynamic modals from DOM
+        if (modal.id && modal.id.includes('DetailModal')) {
+            setTimeout(() => {
+                if (modal && modal.parentNode) {
+                    modal.parentNode.removeChild(modal);
+                }
+            }, 300);
+        }
     });
     document.body.style.overflow = '';
 }
@@ -457,6 +489,77 @@ function viewTicket(ticketId) {
         });
 }
 
+// Ticket Detail Modal Functions
+function showTicketDetailModal(ticket) {
+    // Create modal HTML
+    const modalHTML = `
+        <div id="ticketDetailModal" class="modal active">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Detalles del Ticket #${ticket.id}</h3>
+                    <button class="close-btn" onclick="closeModal('ticketDetailModal')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="ticket-detail-grid">
+                        <div class="detail-group">
+                            <label>Título:</label>
+                            <p>${ticket.title}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Estado:</label>
+                            <span class="status-badge status-${ticket.status}">${ticket.status}</span>
+                        </div>
+                        <div class="detail-group">
+                            <label>Prioridad:</label>
+                            <span class="priority-badge priority-${ticket.priority}">${ticket.priority}</span>
+                        </div>
+                        <div class="detail-group">
+                            <label>Cliente:</label>
+                            <p>${ticket.client_name || 'No asignado'}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Técnico:</label>
+                            <p>${ticket.technician_name || 'Sin asignar'}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Hardware:</label>
+                            <p>${ticket.hardware_name || 'No especificado'}</p>
+                        </div>
+                        <div class="detail-group full-width">
+                            <label>Descripción:</label>
+                            <p>${ticket.description || 'Sin descripción'}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Fecha de Creación:</label>
+                            <p>${ticket.created_at}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Última Actualización:</label>
+                            <p>${ticket.updated_at || 'No actualizado'}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal('ticketDetailModal')">Cerrar</button>
+                    <button class="btn btn-warning" onclick="editTicket(${ticket.id})">Editar</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    document.body.style.overflow = 'hidden';
+}
+
+function populateTicketEditForm(ticket) {
+    // This function would populate the edit form with ticket data
+    // For now, we'll just show a simple message
+    showToast('Función de edición en desarrollo', 'info');
+}
+
 function editTicket(ticketId) {
     showLoading();
     
@@ -517,6 +620,69 @@ function viewClient(clientId) {
         });
 }
 
+// Client Detail Modal Functions
+function showClientDetailModal(client) {
+    // Create modal HTML
+    const modalHTML = `
+        <div id="clientDetailModal" class="modal active">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Detalles del Cliente</h3>
+                    <button class="close-btn" onclick="closeModal('clientDetailModal')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="client-detail-grid">
+                        <div class="detail-group">
+                            <label>Nombre:</label>
+                            <p>${client.name}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Email:</label>
+                            <p>${client.email}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Teléfono:</label>
+                            <p>${client.phone}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Empresa:</label>
+                            <p>${client.company || 'No especificada'}</p>
+                        </div>
+                        <div class="detail-group full-width">
+                            <label>Dirección:</label>
+                            <p>${client.address || 'No especificada'}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Total de Tickets:</label>
+                            <p>${client.total_tickets || 0}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Tickets Activos:</label>
+                            <p>${client.active_tickets || 0}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal('clientDetailModal')">Cerrar</button>
+                    <button class="btn btn-warning" onclick="editClient(${client.id})">Editar</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    document.body.style.overflow = 'hidden';
+}
+
+function populateClientEditForm(client) {
+    // This function would populate the edit form with client data
+    // For now, we'll just show a simple message
+    showToast('Función de edición en desarrollo', 'info');
+}
+
 function editClient(clientId) {
     showLoading();
     
@@ -549,6 +715,69 @@ function viewItem(itemId) {
         .finally(() => {
             hideLoading();
         });
+}
+
+// Item Detail Modal Functions
+function showItemDetailModal(item) {
+    // Create modal HTML
+    const modalHTML = `
+        <div id="itemDetailModal" class="modal active">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Detalles del Item</h3>
+                    <button class="close-btn" onclick="closeModal('itemDetailModal')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="item-detail-grid">
+                        <div class="detail-group">
+                            <label>Nombre:</label>
+                            <p>${item.name}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Categoría:</label>
+                            <p>${item.category}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Número de Serie:</label>
+                            <p>${item.serial_number}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Estado:</label>
+                            <span class="status-badge status-${item.status}">${item.status}</span>
+                        </div>
+                        <div class="detail-group full-width">
+                            <label>Descripción:</label>
+                            <p>${item.description || 'Sin descripción'}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Fecha de Registro:</label>
+                            <p>${item.created_at}</p>
+                        </div>
+                        <div class="detail-group">
+                            <label>Última Actualización:</label>
+                            <p>${item.updated_at || 'No actualizado'}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal('itemDetailModal')">Cerrar</button>
+                    <button class="btn btn-warning" onclick="editItem(${item.id})">Editar</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    document.body.style.overflow = 'hidden';
+}
+
+function populateItemEditForm(item) {
+    // This function would populate the edit form with item data
+    // For now, we'll just show a simple message
+    showToast('Función de edición en desarrollo', 'info');
 }
 
 function editItem(itemId) {

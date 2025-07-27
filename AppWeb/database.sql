@@ -242,7 +242,7 @@ SELECT
     c.name as client_name,
     c.email as client_email,
     c.phone as client_phone,
-    u.name as technician_name,
+    CONCAT(u.first_name, ' ', u.last_name) as technician_name,
     h.name as hardware_name,
     h.serial_number as hardware_serial
 FROM ticket t
@@ -254,14 +254,14 @@ LEFT JOIN hardware h ON t.hardware_id = h.id;
 CREATE OR REPLACE VIEW technician_stats AS
 SELECT 
     u.id,
-    u.name as technician_name,
+    CONCAT(u.first_name, ' ', u.last_name) as technician_name,
     COUNT(t.id) as total_tickets,
     SUM(CASE WHEN t.status = 'cerrado' THEN 1 ELSE 0 END) as completed_tickets,
     AVG(CASE WHEN t.status = 'cerrado' THEN DATEDIFF(t.updated_at, t.created_at) END) as avg_resolution_days
 FROM user u
 LEFT JOIN ticket t ON u.id = t.technician_id
 WHERE u.role IN ('technician', 'admin')
-GROUP BY u.id, u.name;
+GROUP BY u.id, u.first_name, u.last_name;
 
 -- Vista para estadísticas por cliente
 CREATE OR REPLACE VIEW client_stats AS
@@ -292,7 +292,7 @@ BEGIN
         t.status,
         t.priority,
         c.name as client_name,
-        u.name as technician_name,
+        CONCAT(u.first_name, ' ', u.last_name) as technician_name,
         t.created_at
     FROM ticket t
     LEFT JOIN client c ON t.client_id = c.id
@@ -337,8 +337,8 @@ BEGIN
     -- Registrar en historial
     INSERT INTO ticket_history (ticket_id, user_id, action, old_value, new_value)
     VALUES (ticket_id_param, user_id_param, 'technician_assignment', 
-            (SELECT name FROM user WHERE id = current_technician),
-            (SELECT name FROM user WHERE id = technician_id_param));
+            (SELECT CONCAT(first_name, ' ', last_name) FROM user WHERE id = current_technician),
+            (SELECT CONCAT(first_name, ' ', last_name) FROM user WHERE id = technician_id_param));
 END //
 
 DELIMITER ;

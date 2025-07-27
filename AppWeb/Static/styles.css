@@ -982,3 +982,70 @@ body {
         flex-direction: column;
     }
 }
+
+/* Detail Modal Styles */
+.ticket-detail-grid,
+.client-detail-grid,
+.item-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.detail-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.detail-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.detail-group label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.detail-group p {
+    margin: 0;
+    color: #1f2937;
+    line-height: 1.5;
+}
+
+.detail-group .status-badge,
+.detail-group .priority-badge {
+    align-self: flex-start;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 1.5rem;
+}
+
+/* Responsive detail modals */
+@media (max-width: 768px) {
+    .ticket-detail-grid,
+    .client-detail-grid,
+    .item-detail-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .modal-footer {
+        flex-direction: column;
+    }
+}

@@ -234,12 +234,15 @@
                                 <td>{{ ticket.created_at }}</td>
                                 <td>
                                     <div class="action-buttons">
+                                        <!-- eslint-disable-next-line -->
                                         <button class="btn btn-sm btn-info" onclick="viewTicket({{ ticket.id }})">
                                             <i class="fas fa-eye"></i>
                                         </button>
+                                        <!-- eslint-disable-next-line -->
                                         <button class="btn btn-sm btn-warning" onclick="editTicket({{ ticket.id }})">
                                             <i class="fas fa-edit"></i>
                                         </button>
+                                        <!-- eslint-disable-next-line -->
                                         <button class="btn btn-sm btn-danger" onclick="deleteTicket({{ ticket.id }})">
                                             <i class="fas fa-trash"></i>
                                         </button>
@@ -295,9 +298,11 @@
                             </div>
                         </div>
                         <div class="client-actions">
+                            <!-- eslint-disable-next-line -->
                             <button class="btn btn-sm btn-info" onclick="viewClient({{ client.id }})">
                                 <i class="fas fa-eye"></i> Ver
                             </button>
+                            <!-- eslint-disable-next-line -->
                             <button class="btn btn-sm btn-warning" onclick="editClient({{ client.id }})">
                                 <i class="fas fa-edit"></i> Editar
                             </button>
@@ -340,9 +345,11 @@
                             </span>
                         </div>
                         <div class="item-actions">
+                            <!-- eslint-disable-next-line -->
                             <button class="btn btn-sm btn-info" onclick="viewItem({{ item.id }})">
                                 <i class="fas fa-eye"></i>
                             </button>
+                            <!-- eslint-disable-next-line -->
                             <button class="btn btn-sm btn-warning" onclick="editItem({{ item.id }})">
                                 <i class="fas fa-edit"></i>
                             </button>
